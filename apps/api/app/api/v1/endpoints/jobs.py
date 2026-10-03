@@ -82,16 +82,53 @@ def get_job_detail(
     )
     match_explanation = None
     if match_record:
-        match_explanation = MatchExplanation(
-            overall_score=match_record.overall_score,
-            skill_match=match_record.skill_match,
-            experience_match=match_record.experience_match,
-            location_match=match_record.location_match,
-            education_match=match_record.education_match,
-            matched_skills=match_record.matched_skills or [],
-            missing_requirements=match_record.missing_requirements or [],
-            reasoning=match_record.reasoning or "",
-        )
+        if "Role prefers ~" in (match_record.reasoning or "") and current_user.profile:
+            from app.agents.matching import compute_deterministic_match_signals
+            from app.jobs.schemas import NormalizedJob
+            from app.schemas.profile import ProfileBase
+            p_profile = ProfileBase(
+                headline=current_user.profile.headline,
+                phone=current_user.profile.phone,
+                location=current_user.profile.location,
+                experience_years=current_user.profile.experience_years,
+                skills=current_user.profile.skills or [],
+                education=current_user.profile.education or [],
+                experience=current_user.profile.experience or [],
+                projects=current_user.profile.projects or [],
+            )
+            n_job = NormalizedJob(
+                id=job.id,
+                title=job.title,
+                company=job.company,
+                description=job.description,
+                location=job.location,
+                remote=job.remote,
+                url=job.url,
+                source=job.source,
+                tags=job.tags or [],
+            )
+            match_explanation = compute_deterministic_match_signals(p_profile, n_job)
+            match_record.overall_score = match_explanation.overall_score
+            match_record.skill_match = match_explanation.skill_match
+            match_record.experience_match = match_explanation.experience_match
+            match_record.location_match = match_explanation.location_match
+            match_record.education_match = match_explanation.education_match
+            match_record.reasoning = match_explanation.reasoning
+            match_record.matched_skills = match_explanation.matched_skills
+            match_record.missing_requirements = match_explanation.missing_requirements
+            db.add(match_record)
+            db.commit()
+        else:
+            match_explanation = MatchExplanation(
+                overall_score=match_record.overall_score,
+                skill_match=match_record.skill_match,
+                experience_match=match_record.experience_match,
+                location_match=match_record.location_match,
+                education_match=match_record.education_match,
+                matched_skills=match_record.matched_skills or [],
+                missing_requirements=match_record.missing_requirements or [],
+                reasoning=match_record.reasoning or "",
+            )
 
     # Check for existing application
     app_record = (

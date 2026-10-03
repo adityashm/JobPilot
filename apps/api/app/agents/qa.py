@@ -113,10 +113,11 @@ class QuestionAnswerAgent(BaseAgent):
                 evidence="Synthesized from verified profile skills and experience",
             )
         except Exception:
-            fallback = (
-                f"With my {profile.experience_years:.0f} years of engineering experience and skills in "
-                f"{skills_str[:50]}, I am excited about contributing to {job.company} as a {job.title}."
-            )
+            if profile.experience_years >= 1:
+                intro = f"With my {profile.experience_years:.0f} years of engineering experience and skills in {skills_str[:50]}"
+            else:
+                intro = f"With my strong technical foundation and verified skills in {skills_str[:50]}"
+            fallback = f"{intro}, I am excited about contributing to {job.company} as a {job.title}."
             return QuestionAnswerResult(
                 question=question,
                 answer=fallback,

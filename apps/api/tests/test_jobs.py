@@ -95,3 +95,47 @@ def test_job_search_and_matching_flow(client: TestClient):
     detail_after = client.get(f"/api/v1/jobs/{job_id}", headers=headers)
     assert detail_after.json()["match"] is not None
     assert detail_after.json()["match"]["overall_score"] == match_data["overall_score"]
+
+
+def test_internship_and_unspecified_experience_matching():
+    # Candidate is a student / early-career engineer with 0.1 years of experience
+    profile = ProfileBase(
+        skills=["Python", "FastAPI", "React", "Docker"],
+        experience_years=0.1,
+        location="Lucknow",
+    )
+
+    # 1. Internship role with short description (no experience specified)
+    internship_job = NormalizedJob(
+        title="Software Developer Intern",
+        company="Alightway Solutions Pvt. Ltd.",
+        description="Software Developer Intern position in Lucknow. Python and React fundamentals required.",
+        location="Lucknow",
+        remote=False,
+        url="https://in.linkedin.com/jobs/view/software-developer-intern-4469035656",
+        source="LinkedIn",
+        tags=["Python", "React"],
+    )
+
+    match_intern = compute_deterministic_match_signals(profile, internship_job)
+    assert match_intern.experience_match == 100
+    assert "2 years" not in match_intern.reasoning
+    assert "Internship" in match_intern.reasoning or "student" in match_intern.reasoning
+    assert match_intern.overall_score >= 70
+
+    # 2. General role where description does NOT specify required years
+    general_job = NormalizedJob(
+        title="Software Engineer",
+        company="Startup Co",
+        description="Looking for an engineer to build products with Python and FastAPI.",
+        location="Lucknow",
+        remote=False,
+        url="https://example.com/job/123",
+        source="test",
+        tags=["Python", "FastAPI"],
+    )
+    match_general = compute_deterministic_match_signals(profile, general_job)
+    assert match_general.experience_match >= 90
+    assert "2 years" not in match_general.reasoning
+    assert "No specific years of experience requirement" in match_general.reasoning
+
