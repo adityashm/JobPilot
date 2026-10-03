@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { Resume, Profile } from "@/lib/types";
@@ -16,9 +17,10 @@ import {
   ArrowRight,
   Sparkles,
   Loader2,
+  CheckCircle2,
+  X,
 } from "lucide-react";
 import { ProfileNav } from "@/components/ProfileNav";
-
 
 export default function ResumeManagementPage() {
   const { user, token, isLoading: authLoading } = useAuth();
@@ -85,6 +87,7 @@ export default function ResumeManagementPage() {
       await api.setPrimaryResume(token, resumeId);
       await loadResumes();
       setSuccessMessage("Primary application resume updated.");
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
       setError(err.message || "Failed to set primary resume.");
     }
@@ -97,6 +100,7 @@ export default function ResumeManagementPage() {
       await api.deleteResume(token, resumeId);
       await loadResumes();
       setSuccessMessage("Resume deleted.");
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
       setError(err.message || "Failed to delete resume.");
     }
@@ -113,80 +117,101 @@ export default function ResumeManagementPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
-        <div>
-          <div className="flex items-center gap-2 text-sm text-sky-600 dark:text-sky-400 font-medium mb-1">
-            <Link href="/profile" className="hover:underline">Career Profile</Link>
-            <span>/</span>
-            <span>Resumes</span>
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.08] pb-6"
+      >
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[11px] font-mono text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
+            <Sparkles className="w-3 h-3" />
+            <span>AI EXTRACTION PIPELINE</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-            Resume Management & AI Extraction
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            Resume Documents & Parsing
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Upload PDF or DOCX resumes. Our AI parser extracts structured skills, experience, and contact data.
+          <p className="text-xs sm:text-sm text-slate-400">
+            Upload PDF or DOCX resumes. The AI engine extracts structured skills, work history, and contact details.
           </p>
         </div>
 
         <Link
           href="/profile"
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl border border-white/[0.08] hover:bg-white/[0.04] text-slate-200 transition-colors self-start md:self-auto"
         >
-          View Full Profile <ArrowRight className="w-4 h-4" />
+          <span>View Profile</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </Link>
-      </div>
+      </motion.div>
 
       <ProfileNav />
 
-
       {/* Notifications */}
-      {error && (
-        <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-sm flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
-      {successMessage && (
-        <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-sm flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 shrink-0" />
-          <span>{successMessage}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2"
+          >
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <span>{error}</span>
+          </motion.div>
+        )}
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2"
+          >
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <span>{successMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Upload Box */}
-      <div className="p-6 rounded-xl border-2 border-dashed border-sky-300 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 text-center space-y-4">
-        <div className="w-12 h-12 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-600 dark:text-sky-300 mx-auto flex items-center justify-center">
+      {/* Upload Zone */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="glass-panel p-8 rounded-2xl border-2 border-dashed border-indigo-500/30 hover:border-indigo-500/50 bg-indigo-500/[0.02] text-center space-y-4 transition-all"
+      >
+        <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mx-auto flex items-center justify-center shadow-lg shadow-indigo-500/10">
           {uploading ? (
-            <Loader2 className="w-6 h-6 animate-spin" />
+            <Loader2 className="w-7 h-7 animate-spin" />
           ) : (
-            <Upload className="w-6 h-6" />
+            <Upload className="w-7 h-7" />
           )}
         </div>
 
-        <div>
-          <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-            Upload your Resume
+        <div className="space-y-1">
+          <h3 className="text-base font-semibold text-white tracking-tight">
+            Drop or select your resume file
           </h3>
-          <p className="text-xs text-slate-500 mt-1">
-            Supports PDF, DOCX, or TXT documents (Max 10MB)
+          <p className="text-xs text-slate-400">
+            Accepts standard PDF, DOCX, or TXT documents (Max 10MB)
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-          <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer">
+        <div className="flex items-center justify-center gap-2 pt-1">
+          <label className="flex items-center gap-2 text-xs font-mono text-slate-300 cursor-pointer">
             <input
               type="checkbox"
               checked={autoSync}
               onChange={(e) => setAutoSync(e.target.checked)}
-              className="rounded text-sky-600 focus:ring-sky-500"
+              className="rounded accent-indigo-600"
             />
-            <span>Automatically sync extracted skills & info to Career Profile</span>
+            <span>Auto-sync extracted data to Career Profile</span>
           </label>
         </div>
 
-        <div>
+        <div className="pt-2">
           <input
             type="file"
             ref={fileInputRef}
@@ -198,108 +223,113 @@ export default function ResumeManagementPage() {
           />
           <label
             htmlFor="resume-file-input"
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-white shadow-sm cursor-pointer transition-colors ${
+            className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold text-white shadow-lg shadow-indigo-500/20 cursor-pointer transition-all ${
               uploading
-                ? "bg-sky-400 cursor-not-allowed"
-                : "bg-sky-600 hover:bg-sky-500"
+                ? "bg-indigo-500/50 cursor-not-allowed"
+                : "bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500"
             }`}
           >
-            {uploading ? "Extracting & Parsing..." : "Choose File to Upload"}
+            {uploading ? "Extracting & Grounding..." : "Choose File to Upload"}
           </label>
         </div>
-      </div>
+      </motion.div>
 
       {/* Extracted Preview Card */}
       {extractedPreview && (
-        <div className="p-5 rounded-xl border border-sky-200 dark:border-sky-900 bg-white dark:bg-slate-900 shadow-sm space-y-3">
-          <div className="flex items-center gap-2 text-sky-600 dark:text-sky-400 font-semibold text-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-panel p-6 rounded-2xl border border-indigo-500/30 space-y-4 shadow-xl"
+        >
+          <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
             <Sparkles className="w-4 h-4" />
-            <span>AI Extraction Preview</span>
+            <span>Structured Extraction Output</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-            <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60">
-              <span className="text-slate-500 block">Experience</span>
-              <span className="font-semibold text-slate-900 dark:text-white">
+            <div className="p-3 rounded-xl glass-panel border border-white/[0.06]">
+              <span className="text-[10px] text-slate-500 font-mono block">Experience</span>
+              <span className="font-semibold text-slate-200">
                 {extractedPreview.experience_years} years
               </span>
             </div>
-            <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60">
-              <span className="text-slate-500 block">Phone</span>
-              <span className="font-semibold text-slate-900 dark:text-white">
+            <div className="p-3 rounded-xl glass-panel border border-white/[0.06]">
+              <span className="text-[10px] text-slate-500 font-mono block">Phone</span>
+              <span className="font-semibold text-slate-200">
                 {extractedPreview.phone || "Not detected"}
               </span>
             </div>
-            <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60">
-              <span className="text-slate-500 block">LinkedIn</span>
-              <span className="font-semibold text-slate-900 dark:text-white truncate block">
+            <div className="p-3 rounded-xl glass-panel border border-white/[0.06]">
+              <span className="text-[10px] text-slate-500 font-mono block">LinkedIn</span>
+              <span className="font-semibold text-slate-200 truncate block">
                 {extractedPreview.linkedin_url || "Not detected"}
               </span>
             </div>
-            <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60">
-              <span className="text-slate-500 block">GitHub</span>
-              <span className="font-semibold text-slate-900 dark:text-white truncate block">
+            <div className="p-3 rounded-xl glass-panel border border-white/[0.06]">
+              <span className="text-[10px] text-slate-500 font-mono block">GitHub</span>
+              <span className="font-semibold text-slate-200 truncate block">
                 {extractedPreview.github_url || "Not detected"}
               </span>
             </div>
           </div>
           <div>
-            <span className="text-xs text-slate-500 block mb-1">Extracted Skills:</span>
+            <span className="text-[10px] font-mono uppercase text-slate-400 block mb-2">Verified Skills:</span>
             <div className="flex flex-wrap gap-1.5">
               {extractedPreview.skills.length > 0 ? (
                 extractedPreview.skills.map((skill) => (
                   <span
                     key={skill}
-                    className="px-2 py-0.5 rounded text-xs bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-medium"
+                    className="px-2.5 py-0.5 rounded text-[11px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20"
                   >
                     {skill}
                   </span>
                 ))
               ) : (
-                <span className="text-xs text-slate-400 italic">No skills automatically identified</span>
+                <span className="text-xs text-slate-500 italic">No skills detected</span>
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Resumes List */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center justify-between">
-          <span>Uploaded Resumes ({resumes.length})</span>
+        <h2 className="text-sm font-mono uppercase tracking-wider text-slate-400 flex items-center justify-between">
+          <span>Active Resume Library ({resumes.length})</span>
         </h2>
 
         {loading ? (
-          <div className="text-center py-8 text-sm text-slate-500">
-            <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-sky-600" />
-            Loading uploaded resumes...
+          <div className="text-center py-12 text-xs text-slate-400">
+            <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-500" />
+            <span className="font-mono">LOADING RESUMES...</span>
           </div>
         ) : resumes.length === 0 ? (
-          <div className="p-8 text-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 text-sm">
-            No resumes uploaded yet. Upload your first resume above to begin matching jobs!
+          <div className="p-8 text-center rounded-2xl glass-panel border border-white/[0.08] text-slate-400 text-xs">
+            No resume files uploaded yet. Upload a document above to calibrate AI matching.
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3">
             {resumes.map((r) => (
-              <div
+              <motion.div
                 key={r.id}
-                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                whileHover={{ y: -1 }}
+                className="glass-panel p-4 rounded-xl border border-white/[0.08] hover:border-indigo-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] text-indigo-400 flex items-center justify-center shrink-0">
                     <FileText className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-slate-900 dark:text-white">
+                      <span className="font-semibold text-sm text-white">
                         {r.filename}
                       </span>
                       {r.is_primary && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">
-                          <Star className="w-3 h-3 fill-amber-500 text-amber-500" /> Primary
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                          <Star className="w-3 h-3 fill-amber-400 text-amber-400" /> Primary
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-[11px] font-mono text-slate-500">
                       Uploaded on {new Date(r.created_at).toLocaleDateString()}
                     </span>
                   </div>
@@ -309,52 +339,59 @@ export default function ResumeManagementPage() {
                   {!r.is_primary && (
                     <button
                       onClick={() => handleSetPrimary(r.id)}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
+                      className="px-3 py-1.5 text-xs font-mono rounded-lg border border-white/[0.08] hover:bg-white/[0.04] text-slate-300 transition-colors cursor-pointer"
                     >
                       Set Primary
                     </button>
                   )}
                   <button
                     onClick={() => handleViewRawText(r.id, r.filename)}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
+                    className="px-3 py-1.5 text-xs font-mono rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 transition-colors cursor-pointer"
                   >
                     View Text
                   </button>
                   <button
                     onClick={() => handleDeleteResume(r.id)}
-                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
+                    className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-rose-500/10 transition-colors cursor-pointer"
                     title="Delete resume"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Raw Text Modal / Drawer */}
-      {selectedResumeText && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full max-h-[80vh] flex flex-col shadow-xl">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-              <h3 className="font-semibold text-sm text-slate-900 dark:text-white">
-                Extracted Text: {selectedResumeText.filename}
-              </h3>
-              <button
-                onClick={() => setSelectedResumeText(null)}
-                className="text-slate-400 hover:text-slate-600 text-xs font-bold"
-              >
-                ✕ Close
-              </button>
-            </div>
-            <div className="p-4 overflow-y-auto flex-1 font-mono text-xs text-slate-700 dark:text-slate-300 whitespace-pre-wrap bg-slate-50 dark:bg-slate-950 rounded-b-2xl">
-              {selectedResumeText.text}
-            </div>
+      {/* Raw Text Modal */}
+      <AnimatePresence>
+        {selectedResumeText && (
+          <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="glass-panel border border-white/[0.1] rounded-3xl max-w-2xl w-full max-h-[80vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              <div className="p-4 border-b border-white/[0.08] flex items-center justify-between">
+                <h3 className="font-semibold text-xs font-mono text-slate-200">
+                  Extracted Raw Text: {selectedResumeText.filename}
+                </h3>
+                <button
+                  onClick={() => setSelectedResumeText(null)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.05] transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="p-4 overflow-y-auto flex-1 font-mono text-[11px] text-slate-300 whitespace-pre-wrap bg-black/40">
+                {selectedResumeText.text}
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

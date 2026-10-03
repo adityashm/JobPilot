@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { Job, MatchExplanation } from "@/lib/types";
@@ -19,6 +20,9 @@ import {
   Loader2,
   RefreshCw,
   Filter,
+  CheckCircle2,
+  ArrowRight,
+  TrendingUp,
 } from "lucide-react";
 
 export default function JobsPage() {
@@ -57,7 +61,6 @@ export default function JobsPage() {
         remote: remoteOnly ? true : undefined,
         min_salary: minSalary ? Number(minSalary) : undefined,
       });
-      // If DB has no jobs yet, auto-trigger initial discovery
       if (data.length === 0) {
         await handleDiscover();
       } else {
@@ -130,75 +133,98 @@ export default function JobsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
-            <Briefcase className="w-7 h-7 text-sky-600" />
-            Job Discovery & Grounded Matching
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.08] pb-6"
+      >
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[11px] font-mono text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
+            <Sparkles className="w-3 h-3" />
+            <span>EXPLAINABLE MATCHING ENGINE</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            Job Discovery & Transparency Matching
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Discover normalized listings and evaluate transparent, explainable fit against your verified skills.
+          <p className="text-xs sm:text-sm text-slate-400">
+            Browse legitimate job feeds, filter deterministically, and view grounded match explanations.
           </p>
         </div>
 
         <button
           onClick={handleDiscover}
           disabled={searching}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm transition-colors shadow-sm cursor-pointer disabled:opacity-60 self-start md:self-auto"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/20 transition-all cursor-pointer disabled:opacity-60 self-start md:self-auto"
         >
           {searching ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Discovering...
+              <span>Fetching Listings...</span>
             </>
           ) : (
             <>
               <RefreshCw className="w-4 h-4" />
-              Discover New Jobs
+              <span>Discover New Jobs</span>
             </>
           )}
         </button>
-      </div>
+      </motion.div>
 
       {/* Notifications */}
-      {error && (
-        <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-sm flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
-      {successMessage && (
-        <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-sm flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 shrink-0" />
-          <span>{successMessage}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2"
+          >
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <span>{error}</span>
+          </motion.div>
+        )}
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2"
+          >
+            <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
+            <span>{successMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Search & Filter Toolbar */}
-      <form
+      <motion.form
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
         onSubmit={handleDiscover}
-        className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col md:flex-row items-center gap-3"
+        className="glass-panel p-4 rounded-2xl border border-white/[0.08] shadow-lg flex flex-col md:flex-row items-center gap-3"
       >
         <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by title, technology, or company (e.g. Python, FastAPI, React)..."
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+            placeholder="Search roles, skills, or companies (e.g. Python, FastAPI, React)..."
+            className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-white/[0.08] bg-white/[0.02] text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all font-sans"
           />
         </div>
 
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <label className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer whitespace-nowrap">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <label className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.08] text-xs font-medium text-slate-300 cursor-pointer whitespace-nowrap">
             <input
               type="checkbox"
               checked={remoteOnly}
               onChange={(e) => setRemoteOnly(e.target.checked)}
-              className="rounded text-sky-600 focus:ring-sky-500"
+              className="rounded accent-indigo-600"
             />
             <span>Remote Only</span>
           </label>
@@ -207,7 +233,7 @@ export default function JobsPage() {
             <select
               value={minSalary}
               onChange={(e) => setMinSalary(e.target.value)}
-              className="w-full px-2 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 focus:outline-none focus:border-indigo-500/50"
             >
               <option value="">Any Salary</option>
               <option value="80000">$80,000+</option>
@@ -219,119 +245,121 @@ export default function JobsPage() {
 
           <button
             type="submit"
-            className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 transition-colors shrink-0"
+            className="px-4 py-2.5 text-xs font-semibold rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.1] text-white transition-colors shrink-0 cursor-pointer"
           >
-            Apply Filters
+            Filter
           </button>
         </div>
-      </form>
+      </motion.form>
 
       {/* Jobs List */}
       <div className="space-y-4">
         {loading ? (
-          <div className="text-center py-16 text-sm text-slate-500">
-            <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-sky-600" />
-            Loading job listings...
+          <div className="text-center py-20 text-xs text-slate-400">
+            <Loader2 className="w-7 h-7 animate-spin mx-auto mb-3 text-indigo-500" />
+            <span className="font-mono tracking-wider">RETRIEVING NORMALIZED JOB OPPORTUNITIES...</span>
           </div>
         ) : jobs.length === 0 ? (
-          <div className="text-center py-16 p-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500">
-            <p className="text-base font-semibold text-slate-800 dark:text-slate-200">
-              No jobs matching criteria found.
+          <div className="text-center py-16 p-8 rounded-2xl glass-panel border border-white/[0.08] text-slate-400 space-y-2">
+            <p className="text-base font-semibold text-white">
+              No matching listings found.
             </p>
-            <p className="text-xs mt-1">
-              Click "Discover New Jobs" above to fetch fresh job postings from our discovery sources.
+            <p className="text-xs text-slate-500">
+              Click &ldquo;Discover New Jobs&rdquo; above to query active career sources.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            {jobs.map((job) => (
-              <div
+            {jobs.map((job, idx) => (
+              <motion.div
                 key={job.id}
-                className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm space-y-4"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: Math.min(idx * 0.05, 0.5) }}
+                className="glass-panel p-6 rounded-2xl border border-white/[0.08] hover:border-indigo-500/30 transition-all shadow-md space-y-4 relative group"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div>
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2.5 flex-wrap">
                       <Link
                         href={`/jobs/${job.id}`}
-                        className="text-lg font-bold text-slate-900 dark:text-white hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+                        className="text-base sm:text-lg font-bold text-white hover:text-indigo-300 transition-colors"
                       >
                         {job.title}
                       </Link>
                       {job.remote && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                           Remote
                         </span>
                       )}
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.04] text-slate-400 border border-white/[0.06]">
                         {job.employment_type}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 mt-1 flex-wrap">
-                      <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    <div className="flex items-center gap-4 text-xs text-slate-400 mt-1.5 flex-wrap">
+                      <span className="font-semibold text-slate-200">
                         {job.company}
                       </span>
                       <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5" />
+                        <MapPin className="w-3.5 h-3.5 text-slate-500" />
                         {job.location}
                       </span>
                       {job.salary_min && job.salary_max && (
-                        <span className="flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
-                          <DollarSign className="w-3.5 h-3.5" />
+                        <span className="flex items-center gap-1 font-mono text-emerald-400 font-medium">
                           ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}
                         </span>
                       )}
-                      <span className="text-[11px] text-slate-400">
-                        via {job.source}
+                      <span className="text-[11px] font-mono text-slate-500">
+                        source: {job.source}
                       </span>
                     </div>
                   </div>
 
-                  {/* Match Fit Score */}
+                  {/* Match Fit Score Pill */}
                   <div className="flex items-center gap-2 self-start">
                     {job.match ? (
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300">
-                        <Sparkles className="w-4 h-4 text-sky-600" />
-                        <span className="text-xs font-bold">{job.match.overall_score}% Match</span>
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300">
+                        <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                        <span className="text-xs font-mono font-bold">{job.match.overall_score}% Match</span>
                       </div>
                     ) : (
                       <button
                         onClick={() => handleAnalyzeMatch(job.id)}
                         disabled={matchingJobId === job.id}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs font-medium text-slate-300 transition-all cursor-pointer"
                       >
                         {matchingJobId === job.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
                         ) : (
-                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
                         )}
-                        Analyze Match
+                        <span>Analyze Match</span>
                       </button>
                     )}
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
                   {job.description}
                 </p>
 
-                {/* Match Explanation breakdown snippet if available */}
+                {/* Match Explanation Breakdown Snippet */}
                 {job.match && (
-                  <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 text-xs space-y-2">
-                    <p className="text-slate-700 dark:text-slate-300 italic">
-                      "{job.match.reasoning}"
+                  <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs space-y-2">
+                    <p className="text-slate-300 italic">
+                      &ldquo;{job.match.reasoning}&rdquo;
                     </p>
-                    <div className="flex flex-wrap items-center gap-3 text-[11px]">
+                    <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono">
                       {job.match.matched_skills.length > 0 && (
-                        <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                          <CheckCircle className="w-3.5 h-3.5" />
+                        <div className="flex items-center gap-1.5 text-emerald-400">
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                           <span>Matched: {job.match.matched_skills.join(", ")}</span>
                         </div>
                       )}
                       {job.match.missing_requirements.length > 0 && (
-                        <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
-                          <AlertCircle className="w-3.5 h-3.5" />
+                        <div className="flex items-center gap-1.5 text-amber-400">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                           <span>Gaps: {job.match.missing_requirements.slice(0, 2).join(", ")}</span>
                         </div>
                       )}
@@ -340,12 +368,12 @@ export default function JobsPage() {
                 )}
 
                 {/* Tags & Action Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800/60">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-white/[0.06]">
                   <div className="flex flex-wrap gap-1.5">
                     {job.tags?.slice(0, 6).map((t) => (
                       <span
                         key={t}
-                        className="px-2 py-0.5 rounded text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                        className="px-2 py-0.5 rounded text-[11px] font-mono bg-white/[0.03] text-slate-400 border border-white/[0.04]"
                       >
                         {t}
                       </span>
@@ -355,7 +383,7 @@ export default function JobsPage() {
                   <div className="flex items-center gap-2 self-end sm:self-auto">
                     <Link
                       href={`/jobs/${job.id}`}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
+                      className="px-3.5 py-1.5 text-xs font-medium rounded-xl border border-white/[0.08] hover:bg-white/[0.06] text-slate-300 transition-colors"
                     >
                       View Details
                     </Link>
@@ -363,28 +391,28 @@ export default function JobsPage() {
                     {job.is_saved ? (
                       <Link
                         href={`/applications/${job.application_id}`}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/20 transition-colors"
                       >
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        In Pipeline ({job.application_status})
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>In Pipeline ({job.application_status})</span>
                       </Link>
                     ) : (
                       <button
                         onClick={() => handleSaveApplication(job.id)}
                         disabled={savingJobId === job.id}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-sky-600 hover:bg-sky-500 text-white transition-colors cursor-pointer disabled:opacity-60"
+                        className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white shadow-md shadow-indigo-500/20 transition-all cursor-pointer disabled:opacity-60"
                       >
                         {savingJobId === job.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
                           <Bookmark className="w-3.5 h-3.5" />
                         )}
-                        Save & Apply
+                        <span>Save & Apply</span>
                       </button>
                     )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}

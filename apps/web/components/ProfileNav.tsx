@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { User, FileText, Sliders, CheckSquare } from "lucide-react";
 
 export function ProfileNav() {
@@ -9,13 +10,13 @@ export function ProfileNav() {
 
   const tabs = [
     { href: "/profile", label: "Career Overview", icon: User },
-    { href: "/profile/resume", label: "Resumes", icon: FileText },
+    { href: "/profile/resume", label: "Resume Parser", icon: FileText },
     { href: "/profile/preferences", label: "Job Preferences", icon: Sliders },
-    { href: "/profile/answers", label: "Answer Bank", icon: CheckSquare },
+    { href: "/profile/answers", label: "Reusable Answer Bank", icon: CheckSquare },
   ];
 
   return (
-    <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2 mb-6 overflow-x-auto pb-1">
+    <div className="flex border-b border-white/[0.08] gap-1.5 mb-8 overflow-x-auto pb-2 scrollbar-none">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = pathname === tab.href;
@@ -23,14 +24,21 @@ export function ProfileNav() {
           <Link
             key={tab.href}
             href={tab.href}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
+            className={`relative inline-flex items-center gap-2 px-4 py-2 text-xs font-mono font-medium rounded-xl transition-colors whitespace-nowrap cursor-pointer ${
               isActive
-                ? "bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 font-semibold border-b-2 border-sky-600 dark:border-sky-400"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-900"
+                ? "text-white font-semibold"
+                : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
             }`}
           >
-            <Icon className="w-4 h-4" />
-            {tab.label}
+            {isActive && (
+              <motion.span
+                layoutId="profileTabPill"
+                className="absolute inset-0 rounded-xl bg-white/[0.08] border border-white/[0.12] -z-10 shadow-sm"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
+            <Icon className={`w-3.5 h-3.5 ${isActive ? "text-indigo-400" : "text-slate-400"}`} />
+            <span>{tab.label}</span>
           </Link>
         );
       })}

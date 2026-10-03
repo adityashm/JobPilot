@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { ProfileNav } from "@/components/ProfileNav";
@@ -15,6 +16,7 @@ import {
   AlertCircle,
   Loader2,
   Building,
+  Check,
 } from "lucide-react";
 
 export default function PreferencesPage() {
@@ -53,8 +55,11 @@ export default function PreferencesPage() {
 
   if (isLoading || !user) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
+      <div className="flex-1 flex items-center justify-center p-8 min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+          <p className="text-xs text-slate-400 font-mono tracking-wider">LOADING SEARCH PREFERENCES...</p>
+        </div>
       </div>
     );
   }
@@ -102,14 +107,14 @@ export default function PreferencesPage() {
           currency,
           excluded_keywords,
           excluded_companies,
-        } as any,
+        },
       });
 
       await refreshUser();
       setSuccess(true);
       setTimeout(() => setSuccess(false), 4000);
     } catch (err: any) {
-      setError(err.message || "Failed to update preferences.");
+      setError(err.message || "Failed to save preferences.");
     } finally {
       setSaving(false);
     }
@@ -117,190 +122,229 @@ export default function PreferencesPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
-      <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          Job Search Preferences
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Control deterministic filtering rules (Section 11) for locations, remote status, compensation, and keyword exclusions.
-        </p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-6"
+      >
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[11px] font-mono text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
+            <Sliders className="w-3 h-3" />
+            <span>DETERMINISTIC FILTER CRITERIA (SECTION 11)</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            Job Search Preferences
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400">
+            Set hard requirements to filter out jobs without using expensive AI reasoning.
+          </p>
+        </div>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/20 transition-all cursor-pointer disabled:opacity-60 self-start sm:self-auto"
+        >
+          {saving ? (
+            <>
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            <>
+              <Save className="w-3.5 h-3.5" />
+              <span>Save Preferences</span>
+            </>
+          )}
+        </button>
+      </motion.div>
 
       <ProfileNav />
 
-      {success && (
-        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-3 text-sm text-emerald-800 dark:text-emerald-300">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span>Job search preferences saved successfully!</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3 text-xs text-emerald-300"
+          >
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>Search preferences updated and applied to discovery filters!</span>
+          </motion.div>
+        )}
 
-      {error && (
-        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 flex items-center gap-3 text-sm text-red-700 dark:text-red-300">
-          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-3 text-xs text-rose-300"
+          >
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>{error}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <form onSubmit={handleSave} className="space-y-6">
-        {/* Location & Remote */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-sky-600" />
-            Location & Remote Work
+        {/* Location & Remote Preferences */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/[0.08] shadow-xl space-y-5"
+        >
+          <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-indigo-400" />
+            Location & Work Modality
           </h2>
 
           <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                Target Locations (Comma separated)
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                Target Cities or Countries (Comma-separated)
               </label>
               <input
                 type="text"
                 value={locationsText}
                 onChange={(e) => setLocationsText(e.target.value)}
-                placeholder="e.g. Remote, San Francisco, CA, Bangalore, New York"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                placeholder="India, United States, Bangalore, Remote"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               />
-              <p className="text-xs text-slate-500 mt-1">
-                Jobs matching any of these locations will be prioritized in discovery.
-              </p>
             </div>
 
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center gap-3 p-3.5 rounded-xl glass-panel border border-white/[0.06]">
               <input
                 type="checkbox"
-                id="remote_toggle"
+                id="remote-checkbox"
                 checked={remote}
                 onChange={(e) => setRemote(e.target.checked)}
-                className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-slate-300"
+                className="rounded accent-indigo-600"
               />
-              <label htmlFor="remote_toggle" className="text-sm font-medium text-slate-800 dark:text-slate-200 cursor-pointer">
-                Target Remote Opportunities (Recommend remote and distributed roles)
+              <label htmlFor="remote-checkbox" className="text-xs text-slate-200 cursor-pointer">
+                <span className="font-semibold block">Prioritize Remote Opportunities</span>
+                <span className="text-slate-400 text-[11px]">Match roles regardless of physical location constraints</span>
               </label>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Employment Type & Compensation */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-emerald-600" />
-            Employment Type & Minimum Compensation
+        {/* Employment & Salary Requirements */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/[0.08] shadow-xl space-y-5"
+        >
+          <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            <DollarSign className="w-4 h-4 text-emerald-400" />
+            Employment Type & Salary Floor
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
-                Allowed Employment Types
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                Minimum Annual Compensation ($/₹)
               </label>
-              <div className="space-y-2">
-                {["Full-time", "Part-time", "Contract", "Internship"].map((type) => (
-                  <label key={type} className="flex items-center gap-2.5 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={employmentTypes.includes(type)}
-                      onChange={() => handleEmploymentTypeToggle(type)}
-                      className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-slate-300"
-                    />
-                    <span>{type}</span>
-                  </label>
-                ))}
-              </div>
+              <input
+                type="number"
+                value={minimumSalary}
+                onChange={(e) => setMinimumSalary(e.target.value)}
+                placeholder="e.g. 100000"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50 font-mono"
+              />
             </div>
 
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                  Minimum Target Salary (Annual)
-                </label>
-                <div className="flex gap-2">
-                  <select
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
-                    className="w-24 px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  >
-                    <option value="USD">USD ($)</option>
-                    <option value="INR">INR (₹)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                  </select>
-                  <input
-                    type="number"
-                    value={minimumSalary}
-                    onChange={(e) => setMinimumSalary(e.target.value)}
-                    placeholder="e.g. 120000"
-                    className="flex-1 px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  />
-                </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Jobs paying less than this threshold will be filtered out before AI matching.
-                </p>
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                Currency
+              </label>
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50 font-mono"
+              >
+                <option value="USD">USD ($)</option>
+                <option value="INR">INR (₹)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+              </select>
+            </div>
+
+            <div className="sm:col-span-2 space-y-2">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                Accepted Employment Types
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {["Full-time", "Part-time", "Contract", "Internship"].map((t) => {
+                  const isSelected = employmentTypes.includes(t);
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => handleEmploymentTypeToggle(t)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium border transition-colors cursor-pointer ${
+                        isSelected
+                          ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/40"
+                          : "bg-white/[0.02] text-slate-400 border-white/[0.08] hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      {isSelected ? "✓ " : ""}{t}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Deterministic Exclusions (Section 11) */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Ban className="w-4 h-4 text-red-500" />
-            Deterministic Exclusions (Section 11)
-          </h2>
-          <p className="text-xs text-slate-500">
-            Automatically prune jobs matching these keywords or companies without consuming AI tokens.
-          </p>
+        {/* Exclusion Criteria (Negative Filters) */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/[0.08] shadow-xl space-y-5"
+        >
+          <div>
+            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <Ban className="w-4 h-4 text-rose-400" />
+              Negative Exclusions (Skip Automatically)
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Automatically discard job postings matching these keywords or companies before AI analysis.
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <Ban className="w-3.5 h-3.5 text-red-400" />
-                Excluded Keywords
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                Excluded Keywords (e.g. legacy stacks, unsupported tech)
               </label>
               <input
                 type="text"
                 value={excludedKeywordsText}
                 onChange={(e) => setExcludedKeywordsText(e.target.value)}
-                placeholder="e.g. crypto, unpaid, wordpress, cleared"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                placeholder="WordPress, PHP, Cobol, Legacy"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <Building className="w-3.5 h-3.5 text-slate-400" />
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
                 Excluded Companies
               </label>
               <input
                 type="text"
                 value={excludedCompaniesText}
                 onChange={(e) => setExcludedCompaniesText(e.target.value)}
-                placeholder="e.g. UnwantedCorp, Revature"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                placeholder="Company A, Company B"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               />
             </div>
           </div>
-        </div>
-
-        <div className="flex justify-end pt-2">
-          <button
-            type="submit"
-            disabled={saving}
-            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm transition-colors shadow-sm cursor-pointer disabled:opacity-60"
-          >
-            {saving ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Saving Preferences...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                Save Preferences
-              </>
-            )}
-          </button>
-        </div>
+        </motion.div>
       </form>
     </div>
   );

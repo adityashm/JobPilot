@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import {
@@ -17,9 +18,10 @@ import {
   AlertCircle,
   Loader2,
   Sparkles,
+  ShieldCheck,
+  Check,
 } from "lucide-react";
 import { ProfileNav } from "@/components/ProfileNav";
-
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -80,8 +82,11 @@ export default function ProfilePage() {
 
   if (isLoading || !user) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
+      <div className="flex-1 flex items-center justify-center p-8 min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+          <p className="text-xs text-slate-400 font-mono tracking-wider">LOADING PROFILE SPECIFICATION...</p>
+        </div>
       </div>
     );
   }
@@ -142,73 +147,97 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Career Profile
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-6"
+      >
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[11px] font-mono text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
+            <ShieldCheck className="w-3 h-3" />
+            <span>GROUNDED CAREER DATA</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            Career Profile & Attributes
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Define your verified skills and target roles. JobPilot matching uses strictly this grounded data.
+          <p className="text-xs sm:text-sm text-slate-400">
+            Define verified skills, experience, and links. Matching and AI screening answers rely strictly on this profile.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-start sm:self-auto">
           <Link
             href="/profile/resume"
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 text-sm font-medium transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/[0.08] hover:bg-white/[0.04] text-slate-200 text-xs font-semibold transition-colors cursor-pointer"
           >
-            <Sparkles className="w-4 h-4 text-sky-600" />
-            Upload Resume
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Upload Resume</span>
           </Link>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm transition-colors shadow-sm cursor-pointer disabled:opacity-60"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/20 transition-all cursor-pointer disabled:opacity-60"
           >
-          {saving ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              Save Profile
-            </>
-          )}
+            {saving ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-3.5 h-3.5" />
+                <span>Save Profile</span>
+              </>
+            )}
           </button>
         </div>
-      </div>
-
+      </motion.div>
 
       <ProfileNav />
 
+      <AnimatePresence>
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3 text-xs text-emerald-300"
+          >
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>Profile attributes successfully saved to PostgreSQL database!</span>
+          </motion.div>
+        )}
 
-      {success && (
-        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-3 text-sm text-emerald-800 dark:text-emerald-300">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span>Profile changes successfully updated and saved to database!</span>
-        </div>
-      )}
-
-      {error && (
-        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 flex items-center gap-3 text-sm text-red-700 dark:text-red-300">
-          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-3 text-xs text-rose-300"
+          >
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>{error}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Core Career Attributes */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Briefcase className="w-4 h-4 text-sky-600" />
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/[0.08] shadow-xl space-y-5"
+        >
+          <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            <Briefcase className="w-4 h-4 text-indigo-400" />
             Core Career Information
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+            <div className="sm:col-span-2 space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
                 Professional Headline
               </label>
               <input
@@ -216,29 +245,29 @@ export default function ProfilePage() {
                 value={headline}
                 onChange={(e) => setHeadline(e.target.value)}
                 placeholder="Senior Fullstack Engineer / Python & React Specialist"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                Location
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                Current Location
               </label>
               <div className="relative">
-                <MapPin className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                <MapPin className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="Ghaziabad, India / Remote"
-                  className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                Years of Experience
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                Years of Industry Experience
               </label>
               <input
                 type="number"
@@ -246,112 +275,121 @@ export default function ProfilePage() {
                 min="0"
                 value={experienceYears}
                 onChange={(e) => setExperienceYears(parseFloat(e.target.value) || 0)}
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50 font-mono"
               />
             </div>
 
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                Verified Skills (Comma separated)
+            <div className="sm:col-span-2 space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                Verified Skills (Comma-separated)
               </label>
               <input
                 type="text"
                 value={skillsText}
                 onChange={(e) => setSkillsText(e.target.value)}
                 placeholder="Python, FastAPI, React, PostgreSQL, Docker, Playwright, TypeScript"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               />
-              <p className="text-xs text-slate-500 mt-1">
-                These skills will be used in Phase 4 for transparent, explainable match score computation.
+              <p className="text-[11px] text-slate-500">
+                Grounded skills used by the JobMatchingAgent for transparent fit scores.
               </p>
             </div>
 
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                Target Roles (Comma separated)
+            <div className="sm:col-span-2 space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                Target Roles (Comma-separated)
               </label>
               <input
                 type="text"
                 value={targetRolesText}
                 onChange={(e) => setTargetRolesText(e.target.value)}
                 placeholder="Backend Engineer, Fullstack Developer, Software Engineer"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               />
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Links & Socials */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Globe className="w-4 h-4 text-sky-600" />
-            Online Profiles & Portfolios
+        {/* Links & Profiles */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/[0.08] shadow-xl space-y-5"
+        >
+          <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            <Globe className="w-4 h-4 text-indigo-400" />
+            Online Portfolios & Social Presence
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <Link2 className="w-3.5 h-3.5 text-blue-600" />
-                LinkedIn
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                LinkedIn URL
               </label>
               <input
                 type="url"
                 value={linkedinUrl}
                 onChange={(e) => setLinkedinUrl(e.target.value)}
                 placeholder="https://linkedin.com/in/adityashm"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <Link2 className="w-3.5 h-3.5" />
-                GitHub
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                GitHub URL
               </label>
               <input
                 type="url"
                 value={githubUrl}
                 onChange={(e) => setGithubUrl(e.target.value)}
                 placeholder="https://github.com/adityashm"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-emerald-600" />
-                Portfolio
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                Portfolio Site
               </label>
               <input
                 type="url"
                 value={portfolioUrl}
                 onChange={(e) => setPortfolioUrl(e.target.value)}
                 placeholder="https://adityashm.tech"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               />
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Work Authorization & Application Answers (Sections 7 & 14) */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            Work Authorization & Reusable Answer Bank
-          </h2>
-          <p className="text-xs text-slate-500">
-            Pre-configured answers used by the Application Agent during browser auto-filling. You review everything before final submission.
-          </p>
+        {/* Work Authorization & Application Answers */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/[0.08] shadow-xl space-y-5"
+        >
+          <div>
+            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              Work Authorization & Reusable Answers
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Deterministic answers mapped by the browser agent during ATS application pre-filling.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                Work Visa / Status
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                Visa / Work Status
               </label>
               <select
                 value={workVisaStatus}
                 onChange={(e) => setWorkVisaStatus(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               >
                 <option value="Citizen">Citizen / Permanent Resident</option>
                 <option value="Work Visa (H1B/OPT)">Work Visa (H1B/OPT)</option>
@@ -360,22 +398,22 @@ export default function ProfilePage() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
                 Requires Sponsorship?
               </label>
               <select
                 value={requiresSponsorship ? "yes" : "no"}
                 onChange={(e) => setRequiresSponsorship(e.target.value === "yes")}
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               >
                 <option value="no">No - Do not require sponsorship</option>
                 <option value="yes">Yes - Require sponsorship</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
                 Notice Period
               </label>
               <input
@@ -383,18 +421,18 @@ export default function ProfilePage() {
                 value={noticePeriod}
                 onChange={(e) => setNoticePeriod(e.target.value)}
                 placeholder="Immediate / 30 days"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
                 Willing to Relocate?
               </label>
               <select
                 value={willingToRelocate}
                 onChange={(e) => setWillingToRelocate(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50"
               >
                 <option value="Yes">Yes</option>
                 <option value="No">No (Remote only)</option>
@@ -402,8 +440,8 @@ export default function ProfilePage() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400">
                 Target Min. Salary ($/₹)
               </label>
               <input
@@ -411,11 +449,11 @@ export default function ProfilePage() {
                 value={minimumSalary}
                 onChange={(e) => setMinimumSalary(e.target.value)}
                 placeholder="e.g. 120000"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-white/[0.08] bg-[#0c1220] text-slate-200 text-xs focus:outline-none focus:border-indigo-500/50 font-mono"
               />
             </div>
           </div>
-        </div>
+        </motion.div>
       </form>
     </div>
   );

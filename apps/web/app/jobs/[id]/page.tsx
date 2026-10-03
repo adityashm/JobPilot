@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { Job, MatchExplanation } from "@/lib/types";
@@ -18,6 +19,9 @@ import {
   ArrowLeft,
   Loader2,
   Check,
+  CheckCircle2,
+  ShieldCheck,
+  ChevronRight,
 } from "lucide-react";
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -96,76 +100,92 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center text-sm text-slate-500">
-        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-sky-600" />
-        Loading job posting...
+      <div className="max-w-4xl mx-auto px-4 py-20 text-center text-xs text-slate-400">
+        <Loader2 className="w-7 h-7 animate-spin mx-auto mb-3 text-indigo-500" />
+        <span className="font-mono tracking-wider">LOADING JOB SPECIFICATION...</span>
       </div>
     );
   }
 
   if (!job) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center text-sm text-slate-500">
-        <p className="font-semibold text-slate-800 dark:text-slate-200">Job not found.</p>
-        <Link href="/jobs" className="text-sky-600 underline text-xs mt-2 inline-block">
-          Return to Jobs
+      <div className="max-w-4xl mx-auto px-4 py-20 text-center text-xs text-slate-400">
+        <p className="text-base font-semibold text-white">Job not found.</p>
+        <Link href="/jobs" className="text-indigo-400 underline text-xs mt-2 inline-block">
+          Return to Job Discovery
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       {/* Back button */}
       <div>
         <Link
           href="/jobs"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-sky-600 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-mono text-slate-400 hover:text-white transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Job Discovery
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Discovery
         </Link>
       </div>
 
       {/* Notifications */}
-      {error && (
-        <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-sm flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
-      {successMessage && (
-        <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-sm flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 shrink-0" />
-          <span>{successMessage}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2"
+          >
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <span>{error}</span>
+          </motion.div>
+        )}
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2"
+          >
+            <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
+            <span>{successMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Header Card */}
-      <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/[0.08] shadow-xl space-y-5"
+      >
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
                 {job.title}
               </h1>
               {job.remote && (
-                <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   Remote
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400 mt-2 flex-wrap">
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
+            <div className="flex items-center gap-4 text-xs text-slate-400 flex-wrap">
+              <span className="font-semibold text-slate-200">
                 {job.company}
               </span>
               <span className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
+                <MapPin className="w-3.5 h-3.5 text-slate-500" />
                 {job.location}
               </span>
               {job.salary_min && job.salary_max && (
-                <span className="flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
-                  <DollarSign className="w-4 h-4" />
+                <span className="flex items-center gap-1 font-mono text-emerald-400 font-medium">
                   ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}
                 </span>
               )}
@@ -176,23 +196,23 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             {job.is_saved ? (
               <Link
                 href={`/applications/${job.application_id}`}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold text-sm"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-semibold text-xs hover:bg-emerald-500/20 transition-all"
               >
-                <CheckCircle className="w-4 h-4" />
-                In Pipeline ({job.application_status})
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>In Pipeline ({job.application_status})</span>
               </Link>
             ) : (
               <button
                 onClick={handleSaveApplication}
                 disabled={saving}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm transition-colors shadow-sm disabled:opacity-60 cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-60 cursor-pointer"
               >
                 {saving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Bookmark className="w-4 h-4" />
                 )}
-                Save & Start Application
+                <span>Save & Start Application</span>
               </button>
             )}
 
@@ -200,7 +220,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               href={job.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+              className="p-2.5 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] text-slate-400 hover:text-white transition-colors"
               title="Open Original Job Posting"
             >
               <ExternalLink className="w-4 h-4" />
@@ -209,73 +229,78 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         </div>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-1.5 pt-2">
+        <div className="flex flex-wrap gap-1.5 pt-2 border-t border-white/[0.06]">
           {job.tags.map((t) => (
             <span
               key={t}
-              className="px-2.5 py-1 rounded text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium"
+              className="px-2.5 py-0.5 rounded text-[11px] font-mono bg-white/[0.03] text-slate-300 border border-white/[0.06]"
             >
               {t}
             </span>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Explainable Match Evaluation Card (Section 12) */}
-      <div className="p-6 rounded-2xl border border-sky-200 dark:border-sky-900/60 bg-sky-50/30 dark:bg-sky-950/20 shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sky-700 dark:text-sky-300 font-bold text-base">
-            <Sparkles className="w-5 h-5 text-sky-600" />
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="glass-panel p-6 sm:p-8 rounded-2xl border border-indigo-500/20 bg-indigo-500/[0.02] shadow-xl space-y-6"
+      >
+        <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+          <div className="flex items-center gap-2.5 text-white font-bold text-sm sm:text-base">
+            <Sparkles className="w-5 h-5 text-indigo-400" />
             <span>Explainable Candidate Fit Evaluation</span>
           </div>
 
           <button
             onClick={handleEvaluateMatch}
             disabled={evaluating}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 transition-colors shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-slate-200 transition-all cursor-pointer"
           >
             {evaluating ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
             ) : (
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
             )}
-            {job.match ? "Re-evaluate Match" : "Analyze Fit with AI"}
+            <span>{job.match ? "Re-evaluate Fit" : "Analyze Fit with AI"}</span>
           </button>
         </div>
 
         {job.match ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Score breakdown metrics */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-              <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                <span className="text-2xl font-black text-sky-600 dark:text-sky-400">
+              <div className="p-4 rounded-xl glass-panel border border-white/[0.06]">
+                <span className="text-3xl font-extrabold text-indigo-400 font-mono">
                   {job.match.overall_score}%
                 </span>
-                <span className="text-[11px] block font-medium text-slate-500 uppercase mt-0.5">
-                  Overall Fit
+                <span className="text-[10px] block font-mono text-slate-400 uppercase mt-1">
+                  Overall Score
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+              <div className="p-4 rounded-xl glass-panel border border-white/[0.06]">
+                <span className="text-3xl font-extrabold text-emerald-400 font-mono">
                   {job.match.skill_match}%
                 </span>
-                <span className="text-[11px] block font-medium text-slate-500 uppercase mt-0.5">
-                  Skill Match
+                <span className="text-[10px] block font-mono text-slate-400 uppercase mt-1">
+                  Skills Match
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                <span className="text-2xl font-black text-blue-600 dark:text-blue-400">
+              <div className="p-4 rounded-xl glass-panel border border-white/[0.06]">
+                <span className="text-3xl font-extrabold text-blue-400 font-mono">
                   {job.match.experience_match}%
                 </span>
-                <span className="text-[11px] block font-medium text-slate-500 uppercase mt-0.5">
+                <span className="text-[10px] block font-mono text-slate-400 uppercase mt-1">
                   Experience Fit
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                <span className="text-2xl font-black text-purple-600 dark:text-purple-400">
+              <div className="p-4 rounded-xl glass-panel border border-white/[0.06]">
+                <span className="text-3xl font-extrabold text-purple-400 font-mono">
                   {job.match.location_match}%
                 </span>
-                <span className="text-[11px] block font-medium text-slate-500 uppercase mt-0.5">
+                <span className="text-[10px] block font-mono text-slate-400 uppercase mt-1">
                   Location Fit
                 </span>
               </div>
@@ -283,8 +308,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
             {/* Matched skills vs Gaps */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide flex items-center gap-1.5">
+              <div className="p-5 rounded-xl glass-panel border border-emerald-500/20 space-y-3">
+                <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Check className="w-4 h-4" /> Strong Matches ({job.match.matched_skills.length})
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -292,63 +317,68 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     job.match.matched_skills.map((s) => (
                       <span
                         key={s}
-                        className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                        className="px-2.5 py-1 rounded text-xs font-mono font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
                       >
                         ✓ {s}
                       </span>
                     ))
                   ) : (
-                    <span className="text-xs text-slate-400 italic">No exact skill overlaps</span>
+                    <span className="text-xs text-slate-500 italic">No exact skill overlaps</span>
                   )}
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-                <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4" /> Potential Gaps / Unverified
+              <div className="p-5 rounded-xl glass-panel border border-amber-500/20 space-y-3">
+                <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4" /> Identified Requirement Gaps
                 </span>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {job.match.missing_requirements.length > 0 ? (
                     job.match.missing_requirements.map((g, idx) => (
                       <div
                         key={idx}
-                        className="text-xs text-amber-800 dark:text-amber-300 flex items-center gap-1.5"
+                        className="text-xs text-amber-300 flex items-center gap-2"
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                         <span>{g}</span>
                       </div>
                     ))
                   ) : (
-                    <span className="text-xs text-slate-400 italic">No significant requirement gaps identified</span>
+                    <span className="text-xs text-slate-500 italic">No critical qualification gaps</span>
                   )}
                 </div>
               </div>
             </div>
 
             {/* AI Grounded Reasoning */}
-            <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-              <span className="font-semibold block text-slate-900 dark:text-white mb-1">
-                Fit Analysis Summary:
+            <div className="p-4 rounded-xl glass-panel border border-white/[0.06] text-xs text-slate-300 leading-relaxed">
+              <span className="font-semibold block text-white mb-1.5">
+                Evaluation Reasoning:
               </span>
-              <p>{job.match.reasoning}</p>
+              <p className="italic text-slate-300">{job.match.reasoning}</p>
             </div>
           </div>
         ) : (
-          <div className="text-center py-6 text-xs text-slate-500">
-            Click "Analyze Fit with AI" to evaluate how your skills and experience match this role.
+          <div className="text-center py-6 text-xs text-slate-400">
+            Click &ldquo;Analyze Fit with AI&rdquo; to compare your verified profile against this role.
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Full Description Card */}
-      <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
-        <h2 className="text-base font-bold text-slate-900 dark:text-white">
-          Job Description
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+        className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/[0.08] shadow-xl space-y-4"
+      >
+        <h2 className="text-base font-bold text-white tracking-tight">
+          Full Role Description
         </h2>
-        <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+        <div className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-wrap font-sans">
           {job.description}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
