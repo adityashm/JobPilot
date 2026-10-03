@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { SpringCounter } from "@/components/SpringCounter";
 import { SourceMarquee } from "@/components/SourceMarquee";
+import { FolderCard } from "@/components/FolderCard";
 
 export default function HomePage() {
   const containerVariants = {
@@ -47,8 +48,11 @@ export default function HomePage() {
       description:
         "Playwright navigates the ATS and populates complex forms, but halts at a dedicated review screen for your explicit approval.",
       glow: "from-emerald-500/20 to-teal-500/5",
-      border: "hover:border-emerald-500/40",
-      accent: "text-emerald-400",
+      accentColor: "emerald",
+      previewSnippet: {
+        label: "Review Gate",
+        value: "Explicit User Approval Required",
+      },
     },
     {
       icon: Cpu,
@@ -57,8 +61,11 @@ export default function HomePage() {
       description:
         "Switch between 100% free offline local models (Llama 3, DeepSeek) or OpenRouter cloud models via clean provider abstractions.",
       glow: "from-indigo-500/20 to-purple-500/5",
-      border: "hover:border-indigo-500/40",
-      accent: "text-indigo-400",
+      accentColor: "indigo",
+      previewSnippet: {
+        label: "AI Engine",
+        value: "Ollama (Offline $0) ⇄ OpenRouter Cloud",
+      },
     },
     {
       icon: Sparkles,
@@ -67,8 +74,11 @@ export default function HomePage() {
       description:
         "Screening responses are derived strictly from your verified profile and resume. Zero hallucinated employers, titles, or certifications.",
       glow: "from-purple-500/20 to-pink-500/5",
-      border: "hover:border-purple-500/40",
-      accent: "text-purple-400",
+      accentColor: "purple",
+      previewSnippet: {
+        label: "Hallucination Defense",
+        value: "100% Grounded in Verified Profile",
+      },
     },
     {
       icon: Sliders,
@@ -77,8 +87,11 @@ export default function HomePage() {
       description:
         "Inspect exact skill matches, partial overlaps, critical qualification gaps, and reasoned justification before applying.",
       glow: "from-cyan-500/20 to-blue-500/5",
-      border: "hover:border-cyan-500/40",
-      accent: "text-cyan-400",
+      accentColor: "cyan",
+      previewSnippet: {
+        label: "Scoring Model",
+        value: "Deterministic Skills + Seniority Fit",
+      },
     },
   ];
 
@@ -300,35 +313,20 @@ export default function HomePage() {
           viewport={{ once: true, margin: "-100px" }}
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          {bentoFeatures.map((feat, idx) => {
-            const Icon = feat.icon;
-            return (
-              <motion.div
-                key={idx}
-                variants={itemVariants}
-                whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className={`glass-panel rounded-2xl p-8 border border-white/[0.08] ${feat.border} transition-all duration-300 relative group overflow-hidden`}
-              >
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${feat.glow} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`}
-                />
-
-                <div className="relative z-10 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white">
-                      <Icon className={`w-6 h-6 ${feat.accent}`} />
-                    </div>
-                    <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/[0.06] text-slate-300">
-                      {feat.badge}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-white tracking-tight">{feat.title}</h3>
-                  <p className="text-sm text-slate-300 leading-relaxed">{feat.description}</p>
-                </div>
-              </motion.div>
-            );
-          })}
+          {bentoFeatures.map((feat, idx) => (
+            <motion.div key={idx} variants={itemVariants}>
+              <FolderCard
+                index={idx + 1}
+                badge={feat.badge}
+                title={feat.title}
+                description={feat.description}
+                icon={feat.icon}
+                accentColor={feat.accentColor}
+                glowGradient={feat.glow}
+                previewSnippet={feat.previewSnippet}
+              />
+            </motion.div>
+          ))}
         </motion.div>
       </section>
 
