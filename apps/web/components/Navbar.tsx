@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { HealthBadge } from "./HealthBadge";
 import { motion } from "framer-motion";
+import { JobPilotLogo } from "./FeatureIcons";
 import {
   Compass,
   LogOut,
@@ -35,8 +36,8 @@ export function Navbar() {
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-all duration-300">
-                <Compass className="w-5 h-5 transition-transform duration-300 group-hover:rotate-45" />
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-900/60 via-indigo-950 to-purple-950 border border-indigo-500/30 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 group-hover:border-indigo-500/60 group-hover:shadow-indigo-500/30 transition-all duration-300">
+                <JobPilotLogo className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
               </div>
               <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>

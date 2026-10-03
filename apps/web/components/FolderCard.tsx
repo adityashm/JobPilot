@@ -2,14 +2,14 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { LucideIcon, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 export interface FolderCardProps {
   index: number;
   badge: string;
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
   accentColor: string; // e.g. "emerald", "indigo", "purple", "cyan"
   glowGradient: string;
   previewSnippet?: {

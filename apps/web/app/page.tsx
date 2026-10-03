@@ -23,6 +23,12 @@ import {
 import { SpringCounter } from "@/components/SpringCounter";
 import { SourceMarquee } from "@/components/SourceMarquee";
 import { FolderCard } from "@/components/FolderCard";
+import {
+  BrowserApprovalSVG,
+  NeuralEngineSVG,
+  GroundedDocSVG,
+  RadarScoreSVG,
+} from "@/components/FeatureIcons";
 
 export default function HomePage() {
   const containerVariants = {
@@ -42,7 +48,7 @@ export default function HomePage() {
 
   const bentoFeatures = [
     {
-      icon: ShieldCheck,
+      icon: BrowserApprovalSVG,
       badge: "Human-in-the-Loop",
       title: "Zero Blind Submissions",
       description:
@@ -55,7 +61,7 @@ export default function HomePage() {
       },
     },
     {
-      icon: Cpu,
+      icon: NeuralEngineSVG,
       badge: "Model Agnostic",
       title: "Local Ollama or Cloud LLMs",
       description:
@@ -68,7 +74,7 @@ export default function HomePage() {
       },
     },
     {
-      icon: Sparkles,
+      icon: GroundedDocSVG,
       badge: "Truthful QA",
       title: "Grounded Screening Answers",
       description:
@@ -81,7 +87,7 @@ export default function HomePage() {
       },
     },
     {
-      icon: Sliders,
+      icon: RadarScoreSVG,
       badge: "Explainable Match",
       title: "Transparent Compat Score",
       description:
