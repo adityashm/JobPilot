@@ -41,6 +41,7 @@ export default function JobsPage() {
   const [query, setQuery] = useState("");
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [minSalary, setMinSalary] = useState<string>("");
+  const [selectedSource, setSelectedSource] = useState<string>("all");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -252,6 +253,38 @@ export default function JobsPage() {
         </div>
       </motion.form>
 
+      {/* Source Filter Pills */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        {[
+          { id: "all", label: "All Opportunities", count: jobs.length },
+          { id: "linkedin", label: "LinkedIn", count: jobs.filter((j) => j.source === "linkedin").length },
+          { id: "y_combinator", label: "Y Combinator", count: jobs.filter((j) => j.source === "y_combinator").length },
+          { id: "wellfound", label: "Wellfound", count: jobs.filter((j) => j.source === "wellfound").length },
+          { id: "naukri", label: "Naukri", count: jobs.filter((j) => j.source === "naukri").length },
+          { id: "remotive", label: "Remotive", count: jobs.filter((j) => j.source === "remotive").length },
+          { id: "arbeitnow", label: "Arbeitnow", count: jobs.filter((j) => j.source === "arbeitnow").length },
+        ].map((tab) => {
+          const active = selectedSource === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setSelectedSource(tab.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                active
+                  ? "bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/25"
+                  : "bg-white/[0.02] hover:bg-white/[0.06] text-slate-400 border-white/[0.08]"
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${active ? "bg-white/20 text-white" : "bg-white/5 text-slate-500"}`}>
+                {tab.count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Jobs List */}
       <div className="space-y-4">
         {loading ? (
@@ -259,10 +292,10 @@ export default function JobsPage() {
             <Loader2 className="w-7 h-7 animate-spin mx-auto mb-3 text-indigo-500" />
             <span className="font-mono tracking-wider">RETRIEVING NORMALIZED JOB OPPORTUNITIES...</span>
           </div>
-        ) : jobs.length === 0 ? (
+        ) : jobs.filter((j) => selectedSource === "all" || j.source === selectedSource).length === 0 ? (
           <div className="text-center py-16 p-8 rounded-2xl glass-panel border border-white/[0.08] text-slate-400 space-y-2">
             <p className="text-base font-semibold text-white">
-              No matching listings found.
+              No matching listings found for this source.
             </p>
             <p className="text-xs text-slate-500">
               Click &ldquo;Discover New Jobs&rdquo; above to query active career sources.
@@ -270,7 +303,29 @@ export default function JobsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            {jobs.map((job, idx) => (
+            {jobs
+              .filter((j) => selectedSource === "all" || j.source === selectedSource)
+              .map((job, idx) => {
+                const sourceBadge = (() => {
+                  switch (job.source?.toLowerCase()) {
+                    case "linkedin":
+                      return { label: "LinkedIn", color: "bg-sky-500/10 text-sky-400 border-sky-500/30" };
+                    case "y_combinator":
+                      return { label: "Y Combinator", color: "bg-orange-500/10 text-orange-400 border-orange-500/30" };
+                    case "wellfound":
+                      return { label: "Wellfound", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
+                    case "naukri":
+                      return { label: "Naukri", color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/30" };
+                    case "remotive":
+                      return { label: "Remotive", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" };
+                    case "arbeitnow":
+                      return { label: "Arbeitnow", color: "bg-teal-500/10 text-teal-400 border-teal-500/30" };
+                    default:
+                      return { label: job.source || "Curated", color: "bg-purple-500/10 text-purple-400 border-purple-500/30" };
+                  }
+                })();
+
+                return (
               <motion.div
                 key={job.id}
                 initial={{ opacity: 0, y: 15 }}
@@ -287,6 +342,9 @@ export default function JobsPage() {
                       >
                         {job.title}
                       </Link>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium border ${sourceBadge.color}`}>
+                        {sourceBadge.label}
+                      </span>
                       {job.remote && (
                         <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                           Remote
@@ -310,9 +368,6 @@ export default function JobsPage() {
                           ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}
                         </span>
                       )}
-                      <span className="text-[11px] font-mono text-slate-500">
-                        source: {job.source}
-                      </span>
                     </div>
                   </div>
 

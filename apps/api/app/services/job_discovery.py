@@ -7,6 +7,10 @@ from app.jobs.schemas import NormalizedJob
 from app.jobs.sources.mock import MockJobSource
 from app.jobs.sources.remotive import RemotiveJobSource
 from app.jobs.sources.arbeitnow import ArbeitnowJobSource
+from app.jobs.sources.linkedin import LinkedInJobSource
+from app.jobs.sources.ycombinator import YCombinatorJobSource
+from app.jobs.sources.wellfound import WellfoundJobSource
+from app.jobs.sources.naukri import NaukriJobSource
 from app.models.job import Job
 
 
@@ -32,6 +36,10 @@ class JobDiscoveryService:
 
     def __init__(self, sources: Optional[List[JobSource]] = None):
         self.sources = sources or [
+            LinkedInJobSource(source_name="linkedin"),
+            YCombinatorJobSource(source_name="y_combinator"),
+            WellfoundJobSource(source_name="wellfound"),
+            NaukriJobSource(source_name="naukri"),
             RemotiveJobSource(source_name="remotive"),
             ArbeitnowJobSource(source_name="arbeitnow"),
             MockJobSource(source_name="jobpilot_curated"),
