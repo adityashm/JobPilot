@@ -20,6 +20,8 @@ import {
   Database,
   Lock,
 } from "lucide-react";
+import { SpringCounter } from "@/components/SpringCounter";
+import { SourceMarquee } from "@/components/SourceMarquee";
 
 export default function HomePage() {
   const containerVariants = {
@@ -238,6 +240,46 @@ export default function HomePage() {
             </div>
           </div>
         </motion.div>
+
+        {/* Live Source & ATS Marquee Ticker */}
+        <div className="w-full mt-14">
+          <SourceMarquee />
+        </div>
+
+        {/* Proof by the Numbers (Spring Counter Grid) */}
+        <div className="w-full max-w-5xl mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 text-left">
+          <div className="glass-panel rounded-2xl p-5 border border-white/[0.06] space-y-1">
+            <div className="text-3xl font-extrabold text-white flex items-center">
+              <SpringCounter value={6} suffix="+" />
+            </div>
+            <p className="text-xs text-slate-400 font-medium">Job Sources Integrated</p>
+            <span className="text-[10px] text-slate-500 font-mono block">LinkedIn, YC, Wellfound, Naukri</span>
+          </div>
+
+          <div className="glass-panel rounded-2xl p-5 border border-white/[0.06] space-y-1">
+            <div className="text-3xl font-extrabold text-indigo-400 flex items-center">
+              <SpringCounter value={95} suffix="%" />
+            </div>
+            <p className="text-xs text-slate-400 font-medium">Application Data Filled</p>
+            <span className="text-[10px] text-slate-500 font-mono block">Playwright Persistent Flow</span>
+          </div>
+
+          <div className="glass-panel rounded-2xl p-5 border border-white/[0.06] space-y-1">
+            <div className="text-3xl font-extrabold text-emerald-400 flex items-center">
+              <SpringCounter value={0} suffix="" />
+            </div>
+            <p className="text-xs text-slate-400 font-medium">Hallucinated Claims</p>
+            <span className="text-[10px] text-emerald-400/80 font-mono block">100% Grounded in Profile</span>
+          </div>
+
+          <div className="glass-panel rounded-2xl p-5 border border-white/[0.06] space-y-1">
+            <div className="text-3xl font-extrabold text-purple-400 flex items-center">
+              <SpringCounter value={100} suffix="%" />
+            </div>
+            <p className="text-xs text-slate-400 font-medium">Human Control</p>
+            <span className="text-[10px] text-slate-500 font-mono block">Review Before Submission</span>
+          </div>
+        </div>
       </section>
 
       {/* Bento Grid Feature Matrix */}

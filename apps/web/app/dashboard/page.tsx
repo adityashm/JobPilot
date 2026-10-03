@@ -27,6 +27,8 @@ import {
   ChevronRight,
   Layers,
 } from "lucide-react";
+import { SpringCounter } from "@/components/SpringCounter";
+import { SourceMarquee } from "@/components/SourceMarquee";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -192,8 +194,8 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <div className="text-3xl font-extrabold text-white font-mono tracking-tight">
-                    {stat.value}
+                  <div className="text-3xl font-extrabold text-white font-mono tracking-tight flex items-center">
+                    <SpringCounter value={stat.value} />
                   </div>
                   <div className="text-[11px] text-slate-400 flex items-center gap-1">
                     {stat.delta}
@@ -426,6 +428,16 @@ export default function DashboardPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* Connected Feeds & ATS Portals Marquee */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="glass-panel border border-white/[0.08] rounded-2xl p-4 shadow-xl"
+      >
+        <SourceMarquee />
+      </motion.div>
     </div>
   );
 }
