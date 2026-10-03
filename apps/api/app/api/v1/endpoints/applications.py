@@ -133,6 +133,69 @@ async def prepare_application_submission(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
+@router.post("/{application_id}/autofill", response_model=ApplicationResponse)
+async def run_live_browser_autofill(
+    application_id: int,
+    headless: bool = Query(False, description="Run in headed/visible mode by default to prevent anti-bot challenges"),
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Launch Playwright browser session with persistent profile and auto-fill the application page."""
+    app_record = (
+        db.query(Application)
+        .filter(Application.id == application_id, Application.user_id == current_user.id)
+        .first()
+    )
+    if not app_record:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
+
+    profile_obj = current_user.profile
+    if not profile_obj:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Profile required")
+
+    from app.automation.browser import get_browser_manager
+    from app.schemas.profile import ProfileBase
+    browser_manager = get_browser_manager()
+
+    pydantic_profile = ProfileBase(
+        headline=profile_obj.headline,
+        phone=profile_obj.phone,
+        location=profile_obj.location,
+        bio=profile_obj.bio,
+        experience_years=profile_obj.experience_years,
+        target_roles=profile_obj.target_roles or [],
+        skills=profile_obj.skills or [],
+        education=profile_obj.education or [],
+        experience=profile_obj.experience or [],
+        projects=profile_obj.projects or [],
+        work_authorization=profile_obj.work_authorization or {},
+        application_answers=profile_obj.application_answers or {},
+        preferences=profile_obj.preferences or {},
+    )
+
+    resume_path = app_record.resume.file_path if app_record.resume else None
+
+    result = await browser_manager.autofill_application(
+        url=app_record.job.url,
+        profile=pydantic_profile,
+        user_name=current_user.full_name or "Candidate",
+        user_email=current_user.email,
+        answers=app_record.answers or {},
+        resume_path=resume_path,
+        headless=headless,
+    )
+
+    logs = list(app_record.automation_logs or [])
+    logs.extend(result.get("logs", []))
+    app_record.automation_logs = logs
+    app_record.status = ApplicationStatus.REVIEW
+
+    db.add(app_record)
+    db.commit()
+    db.refresh(app_record)
+    return app_record
+
+
 @router.post("/{application_id}/submit", response_model=ApplicationResponse)
 def submit_application_with_approval(
     application_id: int,

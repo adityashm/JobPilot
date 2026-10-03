@@ -20,8 +20,12 @@ import {
   ExternalLink,
   ShieldAlert,
   ShieldCheck,
-  Check,
   Terminal,
+  Play,
+  Monitor,
+  Eye,
+  Zap,
+  Check,
 } from "lucide-react";
 
 export default function ApplicationReviewPage({
@@ -44,6 +48,8 @@ export default function ApplicationReviewPage({
   const [preparing, setPreparing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [autofilling, setAutofilling] = useState(false);
+  const [isHeadless, setIsHeadless] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -92,6 +98,24 @@ export default function ApplicationReviewPage({
       setError(err.message || "Failed to prepare answers.");
     } finally {
       setPreparing(false);
+    }
+  }
+
+  async function handleAutofill() {
+    if (!token) return;
+    setAutofilling(true);
+    setError(null);
+    try {
+      const updated = await api.autofillApplication(token, applicationId, isHeadless);
+      setApplication(updated);
+      setSuccessMessage(
+        "Assisted browser automation completed! Mapped fields and uploaded resume."
+      );
+      setTimeout(() => setSuccessMessage(null), 4000);
+    } catch (err: any) {
+      setError(err.message || "Failed to launch browser auto-fill.");
+    } finally {
+      setAutofilling(false);
     }
   }
 
@@ -252,6 +276,104 @@ export default function ApplicationReviewPage({
             </div>
           </div>
         )}
+      </motion.div>
+
+      {/* Assisted Browser Automation Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.05 }}
+        className="glass-panel p-6 sm:p-8 rounded-2xl border border-indigo-500/20 bg-gradient-to-b from-indigo-500/[0.04] to-transparent shadow-xl space-y-5"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
+          <div className="space-y-1">
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <Monitor className="w-5 h-5 text-indigo-400" />
+              Assisted Browser Auto-Fill (95-5 Workflow)
+            </h2>
+            <p className="text-xs text-slate-400">
+              Automates 95% of tedious data entry using Playwright persistent context with anti-bot evasion.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsHeadless(false)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-colors ${
+                !isHeadless
+                  ? "bg-indigo-600 text-white font-semibold"
+                  : "bg-white/[0.04] text-slate-400 hover:text-white"
+              }`}
+            >
+              <Eye className="w-3.5 h-3.5 inline mr-1" />
+              Visible Window
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsHeadless(true)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-colors ${
+                isHeadless
+                  ? "bg-indigo-600 text-white font-semibold"
+                  : "bg-white/[0.04] text-slate-400 hover:text-white"
+              }`}
+            >
+              Headless
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div className="p-3.5 rounded-xl bg-black/30 border border-white/[0.06] space-y-1">
+            <span className="text-[10px] font-mono text-indigo-300 block uppercase font-bold tracking-wider">
+              1. Profile Mapping
+            </span>
+            <p className="text-slate-300">
+              Auto-fills Name, Email, Phone, LinkedIn, GitHub, Location, and Work Authorization.
+            </p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-black/30 border border-white/[0.06] space-y-1">
+            <span className="text-[10px] font-mono text-indigo-300 block uppercase font-bold tracking-wider">
+              2. Document Upload
+            </span>
+            <p className="text-slate-300">
+              Attaches your selected resume PDF directly to the file input element.
+            </p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-black/30 border border-white/[0.06] space-y-1">
+            <span className="text-[10px] font-mono text-indigo-300 block uppercase font-bold tracking-wider">
+              3. Human Verification
+            </span>
+            <p className="text-slate-300">
+              Window remains open in front of you. Solve any 2s check & click Submit yourself.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+          <div className="text-xs text-slate-400 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>Target: <strong className="text-slate-200 font-mono truncate max-w-[280px] inline-block align-bottom">{application.job?.url || "Portal"}</strong></span>
+          </div>
+
+          <button
+            onClick={handleAutofill}
+            disabled={autofilling || !application.job?.url}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all cursor-pointer disabled:opacity-50"
+          >
+            {autofilling ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                <span>Launching Browser & Filling Form...</span>
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4 text-white fill-white" />
+                <span>Launch Browser & Auto-Fill Form</span>
+              </>
+            )}
+          </button>
+        </div>
       </motion.div>
 
       {/* Resume Selection */}

@@ -290,5 +290,6 @@ class GenericFormAdapter(BaseApplicationAdapter):
         return {
             "filled_count": filled_count,
             "skipped_count": skipped_count,
+            "review_count": review_count,
             "review_required": review_count,
         }

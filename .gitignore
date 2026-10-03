@@ -71,4 +71,7 @@ Desktop.ini
 uploads/
 *.db
 *.sqlite3
+data/
+scratch/
+
 
