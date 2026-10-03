@@ -116,3 +116,81 @@ def test_resume_upload_validation(client: TestClient):
     empty_file = {"file": ("empty.txt", b"", "text/plain")}
     empty_resp = client.post("/api/v1/resumes", headers=headers, files=empty_file)
     assert empty_resp.status_code == 400
+
+
+def test_comprehensive_resume_details_extraction(client: TestClient):
+    reg = client.post("/api/v1/auth/register", json={"email": "aditya_detailed@example.com", "password": "password123", "full_name": "Aditya Sharma"})
+    token = reg.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    sample_resume = b"""
+Aditya Sharma
+Ghaziabad, Delhi NCR, India | +91 9876543210 | aditya@example.com
+LinkedIn: https://linkedin.com/in/adityashm | GitHub: https://github.com/adityashm | Portfolio: https://adityashm.tech
+
+PROFESSIONAL SUMMARY
+Final-year B.Tech CSE student at IMS Engineering College with deep expertise in Python, FastAPI, React, PostgreSQL, Docker, and browser automation.
+
+EDUCATION
+IMS Engineering College, Ghaziabad (AKTU)
+Bachelor of Technology in Computer Science and Engineering | CGPA: 8.31 / 10 | 2023 - 2027
+
+TECHNICAL SKILLS
+Languages: Python, Java, Go, JavaScript, TypeScript, Kotlin, SQL
+Frontend: React, Next.js, Three.js, GSAP, Tailwind CSS, PyWebView
+Backend: FastAPI, PostgreSQL, SQLite, Docker, Redis, REST APIs
+Machine Learning & Mobile: Scikit-learn, Isolation Forest, Android (Jetpack Compose, Room)
+
+WORK EXPERIENCE
+Postix (postix.in) - Co-Founder & Full Stack Lead
+June 2024 - Present
+- Built AI marketing OS and attribution pixel architecture with vanilla JS landing page.
+- Engineered companion native Android application using Kotlin, Jetpack Compose, and Room.
+
+PROJECTS
+AgentShield AI | Python, FastAPI, React, Isolation Forest | https://github.com/adityashm/AgentShield
+- Security monitor for AI agents using Isolation Forest anomaly detection with 96% accuracy.
+- Built dark-mode Command Center React dashboard with real-time audit telemetry.
+
+CA Audit Assistant | React, FastAPI, PyWebView, SQLite | https://github.com/adityashm/ca-audit
+- Desktop app automating audit engagements for Chartered Accountants (CARO 2020, GST reconciliation).
+- 161 automated unit and integration tests bundled via PyInstaller for Windows.
+"""
+
+    files = {"file": ("aditya_detailed.txt", sample_resume, "text/plain")}
+    upload_resp = client.post("/api/v1/resumes", headers=headers, files=files, data={"auto_update_profile": "true"})
+    assert upload_resp.status_code == 200, upload_resp.text
+
+    profile_resp = client.get("/api/v1/profile", headers=headers)
+    assert profile_resp.status_code == 200
+    prof = profile_resp.json()
+
+    # Verify comprehensive details extraction and sync
+    assert prof["phone"] == "+91 9876543210"
+    assert "Ghaziabad" in (prof["location"] or "")
+    assert prof["linkedin_url"] == "https://linkedin.com/in/adityashm"
+    assert prof["github_url"] == "https://github.com/adityashm"
+    assert prof["portfolio_url"] == "https://adityashm.tech"
+    assert prof["experience_years"] >= 1.0
+    assert len(prof["skills"]) >= 20
+    assert "FastAPI" in prof["skills"]
+    assert "Scikit-Learn" in prof["skills"] or "Scikit-learn" in prof["skills"]
+    assert "Docker" in prof["skills"]
+    assert "Kotlin" in prof["skills"]
+
+    # Verify education, experience, and projects sections
+    assert len(prof["education"]) >= 1
+    assert "IMS Engineering College" in prof["education"][0]["institution"]
+    assert "Bachelor of Technology" in prof["education"][0]["degree"]
+    assert prof["education"][0]["start_year"] == 2023
+    assert prof["education"][0]["end_year"] == 2027
+
+    assert len(prof["experience"]) >= 1
+    assert "Postix" in prof["experience"][0]["company"]
+    assert "Co-Founder & Full Stack Lead" in prof["experience"][0]["role"]
+
+    assert len(prof["projects"]) >= 2
+    project_names = [p["name"] for p in prof["projects"]]
+    assert any("AgentShield" in name for name in project_names)
+    assert any("CA Audit" in name for name in project_names)
+

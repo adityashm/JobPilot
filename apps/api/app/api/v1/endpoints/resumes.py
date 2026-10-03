@@ -91,10 +91,11 @@ async def upload_resume(
     if auto_update_profile and current_user.profile:
         profile = current_user.profile
         if extracted_profile.skills:
-            # Merge skills uniquely
             profile.skills = list(dict.fromkeys(profile.skills + extracted_profile.skills))
-        if extracted_profile.phone and not profile.phone:
+        if extracted_profile.phone and (not profile.phone or profile.phone.strip() == ""):
             profile.phone = extracted_profile.phone
+        if extracted_profile.location and (not profile.location or profile.location.strip() == ""):
+            profile.location = extracted_profile.location
         if extracted_profile.linkedin_url and not profile.linkedin_url:
             profile.linkedin_url = extracted_profile.linkedin_url
         if extracted_profile.github_url and not profile.github_url:
@@ -103,19 +104,20 @@ async def upload_resume(
             profile.portfolio_url = extracted_profile.portfolio_url
         if extracted_profile.experience_years > profile.experience_years:
             profile.experience_years = extracted_profile.experience_years
-        if extracted_profile.target_roles and not profile.target_roles:
-            profile.target_roles = extracted_profile.target_roles
-        if extracted_profile.education and not profile.education:
+        if extracted_profile.target_roles:
+            profile.target_roles = list(dict.fromkeys(profile.target_roles + extracted_profile.target_roles))
+        if extracted_profile.education:
             profile.education = extracted_profile.education
-        if extracted_profile.experience and not profile.experience:
+        if extracted_profile.experience:
             profile.experience = extracted_profile.experience
-        if extracted_profile.projects and not profile.projects:
+        if extracted_profile.projects:
             profile.projects = extracted_profile.projects
-        if extracted_profile.headline and not profile.headline:
+        # Update headline if current headline is empty or default placeholder
+        if extracted_profile.headline and (not profile.headline or "Job Seeker" in profile.headline):
             profile.headline = extracted_profile.headline
-        if extracted_profile.bio and not profile.bio:
+        if extracted_profile.bio and (not profile.bio or profile.bio.strip() == ""):
             profile.bio = extracted_profile.bio
-        
+
         db.add(profile)
         db.commit()
 
