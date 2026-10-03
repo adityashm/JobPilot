@@ -6,6 +6,7 @@ from app.jobs.base import JobSource
 from app.jobs.schemas import NormalizedJob
 from app.jobs.sources.mock import MockJobSource
 from app.jobs.sources.remotive import RemotiveJobSource
+from app.jobs.sources.arbeitnow import ArbeitnowJobSource
 from app.models.job import Job
 
 
@@ -31,8 +32,9 @@ class JobDiscoveryService:
 
     def __init__(self, sources: Optional[List[JobSource]] = None):
         self.sources = sources or [
-            MockJobSource(source_name="jobpilot_curated"),
             RemotiveJobSource(source_name="remotive"),
+            ArbeitnowJobSource(source_name="arbeitnow"),
+            MockJobSource(source_name="jobpilot_curated"),
         ]
 
     async def discover_jobs(
